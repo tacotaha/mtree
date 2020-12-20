@@ -11,9 +11,11 @@ typedef struct mtree {
   uchar *nodes[];
 } mtree_t;
 
-void print_hash(uchar *hash);
+void print_hash(uchar * hash);
+size_t get_tree_size(int);
 uchar *concat(const uchar *, const uchar *);
 uchar *hash(uchar *, size_t);
 uchar *build_tree(mtree_t *, int, int);
+
 
 #endif                          /* MTREE_H */

@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
   mtree_t *m;
-  size_t size;
+  size_t size, tree_size;
   struct stat st;
   void *base_addr = NULL;
   int fd = 0, num_blks, offset;
@@ -28,16 +28,13 @@ int main(int argc, char *argv[]) {
   close(fd);
 
   num_blks = size / BLK_SIZE + 1;
+  tree_size = get_tree_size(num_blks);
 
-  printf("File size = %ld, Num Blocks: %d\n", size, num_blks);
+  printf("File size = %ld, Num Blocks: %d, Tree Size: %ld\n",
+         size, num_blks, tree_size);
 
-  m = malloc(sizeof(size_t) + (num_blks * sizeof(char *)));
-  if (!m) {
-    perror("malloc:");
-    return 1;
-  }
-
-  m->size = num_blks;
+  m = malloc(sizeof(mtree_t) + (tree_size * sizeof(uchar *)));
+  m->size = tree_size;
 
   for (int i = 0; i < num_blks; ++i) {
     base = (uchar *) base_addr + i;
@@ -49,7 +46,14 @@ int main(int argc, char *argv[]) {
     size -= BLK_SIZE;
   }
 
-  root = build_tree(m, 0, num_blks - 1);
+  for (int i = num_blks; i < tree_size; ++i) {
+    m->nodes[i] = hash((uchar *) "", 0);
+    printf("Block %02d: ", i);
+    print_hash(m->nodes[i]);
+    printf("\n");
+  }
+
+  root = build_tree(m, 0, tree_size - 1);
   printf("Root: ");
   print_hash(root);
   printf("\n");
