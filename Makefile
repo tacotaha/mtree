@@ -1,12 +1,17 @@
 CC=gcc
 CFLAGS=-Wall -Werror -std=c99 -pedantic -g
 LFLAGS=-lssl -lcrypto
-EXEC=main
+EXEC=mtree
+OBJ=main.o mtree.o
 
-all: $(EXEC)
+mtree: main.o mtree.o
+	$(CC) $(OBJ) -o mtree  $(LFLAGS)
 
-main: main.c 
-	$(CC) $(CFLAGS) main.c  $(LFLAGS) -o main
+main.o: main.c 
+	$(CC) $(CFLAGS) -c main.c -o main.o
+
+mtree.o: mtree.h mtree.c
+	$(CC) $(CFLAGS) -c mtree.c -o mtree.o
 
 clean:
 	rm -f $(EXEC) *.o *~
