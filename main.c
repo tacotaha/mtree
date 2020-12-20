@@ -6,52 +6,53 @@
 #include <sys/mman.h>
 #include "mtree.h"
 
-int main(int argc, char* argv[]){
-    mtree *m;
-    size_t size;
-    struct stat st;
-    void *base_addr = NULL;
-    int fd = 0, num_blks, offset;
-    char *root, *base, *payload = argv[argc  > 1];
+int main(int argc, char *argv[]) {
+  mtree_t *m;
+  size_t size;
+  struct stat st;
+  void *base_addr = NULL;
+  int fd = 0, num_blks, offset;
+  uchar *root, *base;
+  char *payload = argv[argc > 1];
 
-    fd = open(payload, O_RDONLY);
-    if(fd < 0){
-        perror("open:");
-        return 1;
-    }
-     
-    stat(payload, &st);
-    size = st.st_size;
+  fd = open(payload, O_RDONLY);
+  if (fd < 0) {
+    perror("open:");
+    return 1;
+  }
 
-    base_addr = mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
-    close(fd);
+  stat(payload, &st);
+  size = st.st_size;
 
-    num_blks = size / BLK_SIZE + 1;
-    
-    printf("File size = %ld, Num Blocks: %d\n", size, num_blks);
-    
-    m = malloc(sizeof(size_t) + (num_blks * sizeof(char*)));
-    if(!m){
-        perror("malloc:");
-        return 1;
-    }
+  base_addr = mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
+  close(fd);
 
-    m->size = num_blks;
+  num_blks = size / BLK_SIZE + 1;
 
-    for(int i = 0; i < num_blks; ++i){
-        base = (char*) base_addr + i;
-        offset = (i == num_blks - 1) ? size : BLK_SIZE; 
-        m->nodes[i] = hash(base, offset); 
-        printf("Block %02d: ", i);
-        print_hash(m->nodes[i]);
-        printf("\n");
-        size -= BLK_SIZE;
-    }
+  printf("File size = %ld, Num Blocks: %d\n", size, num_blks);
 
-    root = build_tree(m, 0, num_blks - 1);
-    printf("Root: ");
-    print_hash(root);
+  m = malloc(sizeof(size_t) + (num_blks * sizeof(char *)));
+  if (!m) {
+    perror("malloc:");
+    return 1;
+  }
+
+  m->size = num_blks;
+
+  for (int i = 0; i < num_blks; ++i) {
+    base = (uchar *) base_addr + i;
+    offset = (i == num_blks - 1) ? size : BLK_SIZE;
+    m->nodes[i] = hash(base, offset);
+    printf("Block %02d: ", i);
+    print_hash(m->nodes[i]);
     printf("\n");
+    size -= BLK_SIZE;
+  }
 
-    return 0;
+  root = build_tree(m, 0, num_blks - 1);
+  printf("Root: ");
+  print_hash(root);
+  printf("\n");
+
+  return 0;
 }

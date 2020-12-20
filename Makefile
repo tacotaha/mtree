@@ -15,3 +15,7 @@ mtree.o: mtree.h mtree.c
 
 clean:
 	rm -f $(EXEC) *.o *~
+
+format:
+	find . -name "*.c" | xargs indent -par -br -brf -brs -kr -ci2 -cli2 -i2 -l80 -nut
+	find . -name "*.h" | xargs indent -par -br -brf -brs -kr -ci2 -cli2 -i2 -l80 -nut
